@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
 from random import choice as rc
-
 from faker import Faker
-
 from app import app
 from models import db, Message
 
@@ -13,22 +11,28 @@ usernames = [fake.first_name() for i in range(4)]
 if "Duane" not in usernames:
     usernames.append("Duane")
 
-def make_messages():
-
+def delete_messages():
+    """Delete all existing messages from the database."""
     Message.query.delete()
-    
-    messages = []
 
-    for i in range(20):
+def generate_messages(num_messages=20):
+    """Generate and return a list of fake Message objects."""
+    messages = []
+    for _ in range(num_messages):
         message = Message(
             body=fake.sentence(),
             username=rc(usernames),
         )
         messages.append(message)
+    return messages
 
+def save_messages(messages):
+    """Save a list of Message objects to the database."""
     db.session.add_all(messages)
-    db.session.commit()        
+    db.session.commit()
 
 if __name__ == '__main__':
     with app.app_context():
-        make_messages()
+        delete_messages()
+        messages_to_save = generate_messages()
+        save_messages(messages_to_save)
